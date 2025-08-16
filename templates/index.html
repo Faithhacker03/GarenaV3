@@ -496,15 +496,41 @@
                 });
             }
 
+            // <<< THIS IS THE CORRECTED CODE BLOCK >>>
             startForm.addEventListener('submit', function (e) {
+                e.preventDefault(); // Prevent the default form submission (page reload)
+
                 startBtn.disabled = true;
                 startBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Starting...';
                 
-                setTimeout(() => {
-                    lastLogCount = 0;
-                    logsContainer.innerHTML = '';
-                    statusInterval = setInterval(fetchStatus, 1500);
-                }, 500);
+                const formData = new FormData(startForm);
+
+                fetch('/start_check', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        console.log(data.message);
+                        // Clear previous logs and start polling for status
+                        lastLogCount = 0;
+                        logsContainer.innerHTML = '';
+                        // Initial fetch to get immediate feedback, then set interval
+                        fetchStatus(); 
+                        statusInterval = setInterval(fetchStatus, 1500);
+                    } else {
+                        // Handle potential errors from the server
+                        alert('Error starting checker: ' + data.message);
+                        startBtn.disabled = false;
+                        startBtn.innerHTML = '<i class="bi bi-play-circle-fill"></i> Start Checker';
+                    }
+                }).catch(error => {
+                    console.error('Submission Error:', error);
+                    alert('A network error occurred while trying to start the checker.');
+                    startBtn.disabled = false;
+                    startBtn.innerHTML = '<i class="bi bi-play-circle-fill"></i> Start Checker';
+                });
             });
 
             stopBtn.addEventListener('click', function () {
@@ -525,9 +551,14 @@
                 });
             });
 
-            // Initial status check
+            // Initial status check to see if a process is already running from a previous session
             fetchStatus();
-            statusInterval = setInterval(fetchStatus, 1500);
+            // Start polling if the initial status shows it's already running
+            fetch('/status').then(r => r.json()).then(data => {
+                if (data.running) {
+                    statusInterval = setInterval(fetchStatus, 1500);
+                }
+            });
         });
     </script>
 </body>
