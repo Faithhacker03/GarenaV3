@@ -1,4 +1,4 @@
-# --- START OF MODIFIED app.py ---
+# --- START OF FINAL app.py ---
 
 import os
 import sys
@@ -516,6 +516,9 @@ def run_check_task(file_path, telegram_bot_token, telegram_chat_id, selected_coo
     
     is_complete = False
     try:
+        # <<< --- ADDED THIS LINE FOR DIAGNOSTICS --- >>>
+        log_message("[▶️] Background checker task has started successfully.", "text-info")
+
         with status_lock:
             check_status['current_ip'] = get_public_ip()
             log_message(f"[🌐] Current public IP detected: {check_status.get('current_ip', 'Unknown')}", "text-info")
@@ -770,7 +773,6 @@ def start_check():
     thread.daemon = True
     thread.start()
 
-    # <<< THIS IS THE CORRECTED LINE >>>
     return jsonify({'status': 'success', 'message': 'Checker process initiated.'})
 
 @app.route('/status')
