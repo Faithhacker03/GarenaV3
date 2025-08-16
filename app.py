@@ -770,7 +770,8 @@ def start_check():
     thread.daemon = True
     thread.start()
 
-    return redirect(url_for('index'))
+    # <<< THIS IS THE CORRECTED LINE >>>
+    return jsonify({'status': 'success', 'message': 'Checker process initiated.'})
 
 @app.route('/status')
 def get_status():
