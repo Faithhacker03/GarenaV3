@@ -1,0 +1,6 @@
+Flask
+requests
+tqdm
+colorama
+pycryptodome
+werkzeug
