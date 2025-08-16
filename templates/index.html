@@ -1,1 +1,534 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark" data-theme-color="default">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garena Account Checker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --bs-primary: #0d6efd;
+            --bs-primary-rgb: 13, 110, 253;
+            /* Custom Appearance Variables with Fallbacks */
+            --body-bg: #121212;
+            --card-bg: #1e1e1e;
+            --logs-bg: #0c0c0c;
+            --highlight-color: #dc3545;
+        }
+        /* Theme Overrides */
+        html[data-theme-color="danger"] { --bs-primary: #dc3545; --bs-primary-rgb: 220, 53, 69; }
+        html[data-theme-color="success"] { --bs-primary: #28a745; --bs-primary-rgb: 40, 167, 69; }
+        html[data-theme-color="warning"] { --bs-primary: #ffc107; --bs-primary-rgb: 255, 193, 7; }
 
+        body {
+            background-color: var(--body-bg);
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 1200px;
+        }
+        .banner {
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre;
+            color: #888;
+            text-align: center;
+            font-size: 0.9em;
+            line-height: 1.1;
+            padding: 1rem 0;
+            overflow-x: auto;
+        }
+        .banner .highlight { 
+            color: var(--highlight-color);
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid #333;
+        }
+        .form-control, .form-select {
+            background-color: #2a2a2a;
+            color: #e0e0e0;
+            border-color: #444;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #333;
+            color: #fff;
+            border-color: var(--bs-primary); /* Use theme color */
+            box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+        }
+        input[type="color"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 38px;
+            padding: 0;
+            border: 1px solid #444;
+            border-radius: 0.375rem;
+            background-color: transparent;
+            cursor: pointer;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border-radius: 0.375rem;
+            border: none;
+        }
+        input[type="color"]::-moz-color-swatch {
+            border-radius: 0.375rem;
+            border: none;
+        }
+        .progress-bar, .btn-primary {
+             background-color: var(--bs-primary); /* Use theme color */
+             border-color: var(--bs-primary);
+        }
+        html[data-theme-color="warning"] .btn-primary { color: #000; }
+        html[data-theme-color="warning"] .btn-primary:hover { color: #000; }
+        #logs-container {
+            height: 400px;
+            background-color: var(--logs-bg);
+            border: 1px solid #333;
+            padding: 10px;
+            overflow-y: scroll;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .log-line { display: flex; }
+        .log-line .timestamp { color: #888; margin-right: 10px; flex-shrink: 0; }
+        .progress-bar { 
+            transition: width 0.5s ease-in-out;
+        }
+        /* NEW: Progress Bar Animation */
+        .progress-bar-custom-animated {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(var(--bs-primary-rgb), 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(var(--bs-primary-rgb), 0);
+            }
+        }
+        .text-success { color: #28a745 !important; }
+        .text-danger { color: #dc3545 !important; }
+        .text-warning { color: #ffc107 !important; }
+        .text-info { color: #17a2b8 !important; }
+
+        #captcha-modal { background-color: rgba(0,0,0,0.7); }
+        .modal-footer { flex-wrap: wrap; }
+        .captcha-action-btn { margin: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="banner">
+                          :::!~!!!!!:.          
+                  .xUHWH!! !!?M88WHX:.       
+                .X*#M@$!!  !X!M$$$$$WWx:     
+               :!!!!!!?H! :!$!$$$$$$$$$8X:  
+             !!~  ~:~!! :~!$!%$$$$$$$$$$8X:  
+             :!~::!H![   ~.U$X!?W$$$$$$$MM! 
+             ~!~!!!!~~ .:XW$$$U!!?$$$$$$WMM! 
+               !:~~~ .:!M*T#$$$$WX??#MRRMMM! 
+               ~?WuxiW*     *#$$$$8!!!!??!!! 
+             :X- M$$$$  <span class="highlight">𖣘</span>   '#T#$T~!8$WUXU~ 
+          :%'  ~%$$$Mm:         ~!~ ?$$$$$$  
+          :! .-   ~T$$$$8xx.  .xWW- ~””##*'' 
+  .....   -~~:&lt;  !    ~?T$@@W@*?$$ <span class="highlight">𖣘</span> /’   
+ W$@@M!!! .!~~ !!     .:XUW$W!~ '*~:   :     
+ %^~~'.:x%'!!  !H:   !WM$$$$Ti.: .!WUnn!     
+ :::~:!. :X~ .: ?H.!u *$$$$$$$!W:U!T$$M~     
+ .~~   :X@!.-~   ?@WTWo('*$$$W$TH$!          
+ Wi.~!X$?!-~    : ?$$$B$Wu(***$RM!           
+ $R@i.#~ !     :   -$$$$$%$Mm$;              
+ ?MXT@Wx.~    :     ~##$$$$M~                
+<span class="highlight" id="credits-span">            𝐏𝐫𝐞𝐬𝐞𝐧𝐭𝐞𝐝 𝐁𝐲: PAPA MO </span>
+        </div>
+
+        <div class="row">
+            <!-- Control Panel -->
+            <div class="col-lg-4">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5><i class="bi bi-gear-fill"></i> Control Panel</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="start-form" action="/start_check" method="POST" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="account_file" class="form-label">Account File (.txt)</label>
+                                <input class="form-control" type="file" id="account_file" name="account_file" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="cookie_module" class="form-label">Cookie Module</label>
+                                <select class="form-select" id="cookie_module" name="cookie_module">
+                                    <option value="ken_cookie" selected>Ken Cookie</option>
+                                    <option value="change_cookie">Change Cookie (Enhanced)</option>
+                                    <option value="set_cookie">Numbered Set (from config)</option>
+                                </select>
+                            </div>
+                            <!-- NEW: Number Input Field -->
+                            <div class="mb-3" id="cookie-number-input-wrapper" style="display: none;">
+                                <label for="cookie_number_input" class="form-label">Use Fixed Cookie Number</label>
+                                <input type="number" class="form-control" id="cookie_number_input" name="cookie_number" min="1" placeholder="e.g., 200 (optional)">
+                                <div class="form-text">Leave empty to cycle through all cookies in the set.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Telegram Notifications</label>
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text"><i class="bi bi-robot"></i></span>
+                                    <input type="text" class="form-control" name="telegram_bot_token" placeholder="Bot Token" value="{{ bot_token }}">
+                                </div>
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                    <input type="text" class="form-control" name="telegram_chat_id" placeholder="Chat ID" value="{{ chat_id }}">
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-filter-circle"></i></span>
+                                    <select class="form-select" id="telegram_level_filter" name="telegram_level_filter">
+                                        <option value="all" selected>Send All Levels to Telegram</option>
+                                        <option value="100+">Send Level 100+ to Telegram</option>
+                                        <option value="none">Disable Telegram Notifications</option>
+                                    </select>
+                                </div>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" name="save_telegram_creds" id="save_telegram_creds" checked>
+                                    <label class="form-check-label" for="save_telegram_creds">Save credentials for next time</label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="use_cookie_set" name="use_cookie_set">
+                                    <label class="form-check-label" for="use_cookie_set">Use hardcoded cookies from `cookie_config.py`</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="auto_delete" name="auto_delete">
+                                    <label class="form-check-label" for="auto_delete">Delete account file on completion</label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="force_restart" name="force_restart">
+                                    <label class="form-check-label" for="force_restart">Start from beginning (ignore saved progress)</label>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" id="start-btn" class="btn btn-primary"><i class="bi bi-play-circle-fill"></i> Start Checker</button>
+                                <button type="button" id="stop-btn" class="btn btn-danger" style="display: none;"><i class="bi bi-stop-circle-fill"></i> Stop Checker</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Appearance Settings -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <button class="btn btn-link-light text-decoration-none p-0 w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#appearance-settings">
+                                <i class="bi bi-palette-fill"></i> Appearance & Credits
+                            </button>
+                        </h5>
+                    </div>
+                    <div id="appearance-settings" class="collapse">
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="theme-selector" class="form-label">Main Theme Color</label>
+                                <div id="theme-selector" class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm w-100" style="background-color: #0d6efd;" data-theme="default" title="Default Blue"></button>
+                                    <button type="button" class="btn btn-sm w-100" style="background-color: #dc3545;" data-theme="danger" title="Red"></button>
+                                    <button type="button" class="btn btn-sm w-100" style="background-color: #28a745;" data-theme="success" title="Green"></button>
+                                    <button type="button" class="btn btn-sm w-100" style="background-color: #ffc107;" data-theme="warning" title="Yellow"></button>
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label for="highlight-color-picker" class="form-label small">Skull & Highlight</label>
+                                    <input type="color" id="highlight-color-picker" class="form-control" value="#dc3545">
+                                </div>
+                                <div class="col-6">
+                                    <label for="body-bg-picker" class="form-label small">Page BG</label>
+                                    <input type="color" id="body-bg-picker" class="form-control" value="#121212">
+                                </div>
+                                <div class="col-6">
+                                    <label for="card-bg-picker" class="form-label small">Card BG</label>
+                                    <input type="color" id="card-bg-picker" class="form-control" value="#1e1e1e">
+                                </div>
+                                <div class="col-6">
+                                    <label for="logs-bg-picker" class="form-label small">Logs BG</label>
+                                    <input type="color" id="logs-bg-picker" class="form-control" value="#0c0c0c">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="credits-text-input" class="form-label">Credits Text</label>
+                                <input type="text" class="form-control" id="credits-text-input" value="PAPA MO">
+                            </div>
+                            <button type="button" id="reset-appearance-btn" class="btn btn-sm btn-outline-secondary w-100">Reset Appearance</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Status and Logs -->
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="bi bi-terminal-fill"></i> Live Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="progress mb-3" role="progressbar" style="height: 25px;">
+                            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-custom-animated" style="width: 0%">0%</div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 text-muted">
+                            <small id="progress-text">Checked: 0 / 0</small>
+                            <small id="current-account-text">Status: Idle</small>
+                        </div>
+                        <div id="stats-container" class="d-flex flex-wrap justify-content-around small p-2 rounded bg-dark mb-3">
+                            <span><i class="bi bi-check-circle-fill text-success"></i> Hits: <span id="stats-hits">0</span></span>
+                            <span><i class="bi bi-x-circle-fill text-danger"></i> Fails: <span id="stats-fails">0</span></span>
+                            <span><i class="bi bi-key-fill text-warning"></i> Wrong Pass: <span id="stats-wrongpass">0</span></span>
+                            <span><i class="bi bi-shield-fill-check text-success"></i> Clean: <span id="stats-clean">0</span></span>
+                            <span><i class="bi bi-shield-fill-exclamation text-warning"></i> Not Clean: <span id="stats-notclean">0</span></span>
+                            <span><i class="bi bi-send-fill text-info"></i> TG Sent: <span id="stats-tgsent">0</span></span>
+                            <span><i class="bi bi-robot text-danger"></i> CAPTCHA: <span id="stats-captcha">0</span></span>
+                        </div>
+                        <div id="logs-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CAPTCHA Modal -->
+    <div class="modal fade" id="captcha-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="bi bi-shield-lock-fill"></i> CAPTCHA Detected</h5>
+                </div>
+                <div class="modal-body">
+                    <p>The checker is paused. A cookie was likely blocked and has been removed from the session.</p>
+                    <p>Please choose an action:</p>
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    <button type="button" class="btn btn-secondary captcha-action-btn" data-action="next_cookie"><i class="bi bi-arrow-right-circle"></i> Resume with Next Cookie</button>
+                    <button type="button" class="btn btn-primary captcha-action-btn" data-action="fetch_pool"><i class="bi bi-cloud-download-fill"></i> Fetch New Cookies (for next session)</button>
+                    <button type="button" class="btn btn-warning captcha-action-btn" data-action="retry_ip"><i class="bi bi-globe"></i> I Changed My IP/VPN</button>
+                    <button type="button" class="btn btn-danger captcha-action-btn" data-action="stop_checker"><i class="bi bi-stop-circle-fill"></i> Stop & Exit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Main UI elements
+            const startForm = document.getElementById('start-form');
+            const startBtn = document.getElementById('start-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            const logsContainer = document.getElementById('logs-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const currentAccountText = document.getElementById('current-account-text');
+            const statsHits = document.getElementById('stats-hits');
+            const statsFails = document.getElementById('stats-fails');
+            const statsWrongPass = document.getElementById('stats-wrongpass');
+            const statsClean = document.getElementById('stats-clean');
+            const statsNotClean = document.getElementById('stats-notclean');
+            const statsTgSent = document.getElementById('stats-tgsent');
+            const statsCaptcha = document.getElementById('stats-captcha');
+            const captchaModal = new bootstrap.Modal(document.getElementById('captcha-modal'));
+            
+            // Appearance and Credits Elements
+            const htmlElement = document.documentElement;
+            const themeButtons = document.querySelectorAll('#theme-selector button');
+            const highlightColorPicker = document.getElementById('highlight-color-picker');
+            const bodyBgPicker = document.getElementById('body-bg-picker');
+            const cardBgPicker = document.getElementById('card-bg-picker');
+            const logsBgPicker = document.getElementById('logs-bg-picker');
+            const creditsTextInput = document.getElementById('credits-text-input');
+            const creditsSpan = document.getElementById('credits-span');
+            const resetAppearanceBtn = document.getElementById('reset-appearance-btn');
+            
+            // NEW: Cookie number input elements
+            const cookieModuleSelect = document.getElementById('cookie_module');
+            const cookieNumberWrapper = document.getElementById('cookie-number-input-wrapper');
+            
+            let statusInterval;
+            let lastLogCount = 0;
+            
+            const APPEARANCE_STORAGE_KEY = 'garenaCheckerAppearance';
+
+            // --- APPEARANCE & CREDITS LOGIC ---
+            function applyAndSaveAppearance() {
+                const settings = {
+                    mainTheme: htmlElement.getAttribute('data-theme-color') || 'default',
+                    highlightColor: highlightColorPicker.value,
+                    bodyBg: bodyBgPicker.value,
+                    cardBg: cardBgPicker.value,
+                    logsBg: logsBgPicker.value,
+                    creditsText: creditsTextInput.value
+                };
+
+                // Apply CSS variables
+                htmlElement.style.setProperty('--highlight-color', settings.highlightColor);
+                htmlElement.style.setProperty('--body-bg', settings.bodyBg);
+                htmlElement.style.setProperty('--card-bg', settings.cardBg);
+                htmlElement.style.setProperty('--logs-bg', settings.logsBg);
+                
+                // Apply credits text
+                creditsSpan.textContent = `            𝐏𝐫𝐞𝐬𝐞𝐧𝐭𝐞𝐝 𝐁𝐲: ${settings.creditsText} `;
+                
+                // Save to localStorage
+                localStorage.setItem(APPEARANCE_STORAGE_KEY, JSON.stringify(settings));
+            }
+
+            function loadAppearance() {
+                const savedSettings = localStorage.getItem(APPEARANCE_STORAGE_KEY);
+                if (savedSettings) {
+                    const settings = JSON.parse(savedSettings);
+                    htmlElement.setAttribute('data-theme-color', settings.mainTheme);
+                    highlightColorPicker.value = settings.highlightColor;
+                    bodyBgPicker.value = settings.bodyBg;
+                    cardBgPicker.value = settings.cardBg;
+                    logsBgPicker.value = settings.logsBg;
+                    creditsTextInput.value = settings.creditsText;
+                }
+                // Apply the loaded (or default) settings
+                applyAndSaveAppearance();
+            }
+            
+            themeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    htmlElement.setAttribute('data-theme-color', button.dataset.theme);
+                    applyAndSaveAppearance();
+                });
+            });
+
+            [highlightColorPicker, bodyBgPicker, cardBgPicker, logsBgPicker].forEach(picker => {
+                picker.addEventListener('input', applyAndSaveAppearance);
+            });
+            creditsTextInput.addEventListener('input', applyAndSaveAppearance);
+
+            resetAppearanceBtn.addEventListener('click', () => {
+                localStorage.removeItem(APPEARANCE_STORAGE_KEY);
+                location.reload();
+            });
+            
+            loadAppearance();
+            // --- END APPEARANCE & CREDITS LOGIC ---
+            
+            // --- NEW: LOGIC FOR COOKIE NUMBER INPUT ---
+            function toggleCookieNumberInput() {
+                if (cookieModuleSelect.value === 'set_cookie') {
+                    cookieNumberWrapper.style.display = 'block';
+                } else {
+                    cookieNumberWrapper.style.display = 'none';
+                }
+            }
+            
+            cookieModuleSelect.addEventListener('change', toggleCookieNumberInput);
+            // Run on page load as well
+            toggleCookieNumberInput();
+            // --- END COOKIE NUMBER LOGIC ---
+
+            function updateUI(status) {
+                if (status.running) {
+                    startBtn.style.display = 'none';
+                    stopBtn.style.display = 'block';
+                    progressBar.classList.add('progress-bar-animated');
+                } else {
+                    startBtn.style.display = 'block';
+                    stopBtn.style.display = 'none';
+                    progressBar.classList.remove('progress-bar-animated');
+                    if (statusInterval) { clearInterval(statusInterval); }
+                }
+
+                const progress = status.total > 0 ? (status.progress / status.total) * 100 : 0;
+                progressBar.style.width = progress.toFixed(2) + '%';
+                progressBar.textContent = progress.toFixed(0) + '%';
+                progressText.textContent = `Checked: ${status.progress} / ${status.total}`;
+                currentAccountText.textContent = `Current: ${status.current_account || 'N/A'}`;
+
+                if (status.stats) {
+                    statsHits.textContent = status.stats.successful || 0;
+                    statsFails.textContent = status.stats.failed || 0;
+                    statsWrongPass.textContent = status.stats.incorrect_pass || 0;
+                    statsClean.textContent = status.stats.clean || 0;
+                    statsNotClean.textContent = status.stats.not_clean || 0;
+                    statsTgSent.textContent = status.stats.telegram_sent || 0;
+                    statsCaptcha.textContent = status.stats.captcha_count || 0;
+                }
+
+                if (status.logs.length > lastLogCount) {
+                    const newLogs = status.logs.slice(lastLogCount);
+                    newLogs.forEach(log => {
+                        const logElement = document.createElement('div');
+                        logElement.className = `log-line ${log.class}`;
+                        logElement.innerHTML = `<span class="timestamp">${log.timestamp}</span><span>${log.message}</span>`;
+                        logsContainer.appendChild(logElement);
+                    });
+                    logsContainer.scrollTop = logsContainer.scrollHeight;
+                    lastLogCount = status.logs.length;
+                }
+                
+                if (status.captcha_detected) { captchaModal.show(); } 
+                else { captchaModal.hide(); }
+                
+                if(status.final_summary && !status.running) {
+                    const summaryElement = document.createElement('pre');
+                    summaryElement.className = 'text-success p-2 mt-2 border border-success rounded';
+                    summaryElement.textContent = status.final_summary;
+                    logsContainer.appendChild(summaryElement);
+                    logsContainer.scrollTop = logsContainer.scrollHeight;
+                }
+            }
+
+            function fetchStatus() {
+                fetch('/status').then(response => response.json()).then(data => {
+                    updateUI(data);
+                }).catch(error => {
+                    console.error('Error fetching status:', error);
+                    if (statusInterval) clearInterval(statusInterval);
+                });
+            }
+
+            startForm.addEventListener('submit', function (e) {
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Starting...';
+                
+                setTimeout(() => {
+                    lastLogCount = 0;
+                    logsContainer.innerHTML = '';
+                    statusInterval = setInterval(fetchStatus, 1500);
+                }, 500);
+            });
+
+            stopBtn.addEventListener('click', function () {
+                fetch('/stop_check', { method: 'POST' }).then(response => response.json()).then(data => {
+                    console.log(data.message);
+                    stopBtn.disabled = true;
+                    stopBtn.textContent = "Stopping...";
+                });
+            });
+            
+            document.querySelectorAll('.captcha-action-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.dataset.action;
+                    const formData = new FormData();
+                    formData.append('action', action);
+                    fetch('/captcha_action', { method: 'POST', body: formData });
+                    captchaModal.hide();
+                });
+            });
+
+            // Initial status check
+            fetchStatus();
+            statusInterval = setInterval(fetchStatus, 1500);
+        });
+    </script>
+</body>
+</html>
